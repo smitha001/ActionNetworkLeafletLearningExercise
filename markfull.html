@@ -45,12 +45,18 @@ function drawMarkersOnMap(andata) {
         // Recommend you put an IF statement in to filter out past events... p[i].start_date ...
         
         var c = ((parseInt(p[i].capacity) - parseInt(p[i].total_accepted)) > 0) ? "Green": "Red"
-        var cm = L.circleMarker([p[i].location.location.latitude,p[i].location.location.longitude], {radius: 10, fillColor: c , weight: 0, fillOpacity: 1.0  })
+        var cm = L.circleMarker([p[i].location.location.latitude,p[i].location.location.longitude], {radius: 10, fillColor: c , weight: 0, fillOpacity: 1.0, link: p[i].browser_url})
         cm.bindTooltip(p[i].title + " " + p[i].start_date).openTooltip();
         if ((parseInt(p[i].capacity) - parseInt(p[i].total_accepted)) > 0) {
-            cm.on("click", function () {window.open(p[i].browser_url)});
+            cm.on("click", function (e) {
+                window.open(e.target.options.link)
+                
+            });
         } else {
-            cm.on("click", function () {alert("Sorry, that event is full."); window.open(p[i].browser_url)});
+            cm.on("click", function (e) {
+                alert("Sorry, that event is full.");
+                window.open(e.target.options.link)
+            });
         }
         cm.addTo(mymap);
     }
