@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Action Network Event Full Leaflet sample</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js" integrity="sha256-wS9gmOZBqsqWxgIVgA8Y9WcQOa7PgSIX+rPA0VL2rbQ=" crossorigin="anonymous"></script>
+	<link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" crossorigin=""></script>
+</head>
+<body>
+<div id="mapid" style="width: 100vw; height: 100vh;"></div>
+<script>
+ mapOptions = {
+    zoomControl:false,
+    zoomSnap: 0.1,
+    center: [-27.48,153],
+    zoom: 10,
+    maxZoom: 18,
+    minZoom: 0,
+    sleep: false,
+    sleepNote: false,
+    visualClickEvents: 'click',
+  };
+
+	var mymap = L.map('mapid', mapOptions);
+
+
+var CartoDB_Voyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+	subdomains: 'abcd',
+	maxZoom: 20
+}).addTo(mymap);
+
+          
+function drawMarkersOnMap(andata) {
+    var p = andata._embedded['osdi:events']
+    for (i in p) {
+        var c = ((parseInt(p[i].capacity) - parseInt(p[i].total_accepted)) > 0) ? "Green": "Red"
+        var cm = L.circleMarker([p[i].location.location.latitude,p[i].location.location.longitude], {radius: 10, fillColor: c , weight: 0, fillOpacity: 1.0  })
+        cm.bindTooltip(p[i].title + " " + p[i].start_date).openTooltip();
+        if ((parseInt(p[i].capacity) - parseInt(p[i].total_accepted)) > 0) {
+            cm.on("click", function () {window.open(p[i].browser_url)});
+        } else {
+            cm.on("click", function () {alert("Sorry, that event is full."); window.open(p[i].browser_url)});
+        }
+        cm.addTo(mymap);
+    }
+}
+
+
+function readAN() {
+                $.ajax({
+            type : "POST",  //type of method
+            url  : "./anevent.php",  //your page
+           // data : v ,// passing the values
+            success: function (response) {
+                    // alert(response);
+                     var t = JSON.parse(response);
+                     drawMarkersOnMap(t);
+            },
+            error: function (response) {
+                alert("Couldn't reach the Action network API");
+                alert(response);
+                    }
+        });
+       
+        
+}
+
+readAN();
+
+  </script>
+  </html>
